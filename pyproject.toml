@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools >= 65", "wheel >= 0.38"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "onyx"
+version = "0.1.0"
+description = "A simple extension for pygame that abstracts many common usage patterns."
+dependencies = ["pygame >= 2.5"]
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+readme = "README.md"
+
+[project.urls]
+"source" = "https://github.com/mcjo163/onyx-engine"
