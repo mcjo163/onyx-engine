@@ -10,16 +10,22 @@ class SceneSwitcher(onyx.Component):
     def handle(self, _: pygame.event.Event):
         # We know this is a MOUSEBUTTONDOWN event
         print(f"Switching to '{self.target_scene}' scene")
-        onyx.scene.change_scene(self.target_scene)
+        self.app.change_scene(self.target_scene)
 
 
 if __name__ == "__main__":
-    onyx.App(
+    app = onyx.App(
         title="scenes",
         dimensions=[300, 200],
         target_fps=20,
-        scenes=[
+    )
+
+    # We can add scenes to the app after creation.
+    app.add_scenes(
+        [
             onyx.Scene("red", [SceneSwitcher("blue")], pygame.Color("red")),
             onyx.Scene("blue", [SceneSwitcher("red")], pygame.Color("blue")),
         ],
-    ).run()
+    )
+
+    app.run()

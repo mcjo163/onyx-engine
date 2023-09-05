@@ -8,46 +8,31 @@ class Square(onyx.RenderedComponent):
         rect = pygame.Rect(0, 0, size, size)
         rect.center = (pos.x, pos.y)
 
-        super().__init__(
-            [
-                pygame.KEYDOWN,
-                pygame.KEYUP,
-            ],
-            rect,
-        )
+        super().__init__([], rect)
 
         self.pos = pos
-        self.velocity = pygame.Vector2(0, 0)
 
-    def handle(self, event: pygame.event.Event):
-        match event.type:
-            case pygame.KEYDOWN:
-                match event.key:
-                    case pygame.K_RIGHT:
-                        self.velocity.x = 1
-                    case pygame.K_LEFT:
-                        self.velocity.x = -1
-                    case pygame.K_DOWN:
-                        self.velocity.y = 1
-                    case pygame.K_UP:
-                        self.velocity.y = -1
-            case pygame.KEYUP:
-                match event.key:
-                    case pygame.K_RIGHT | pygame.K_LEFT:
-                        self.velocity.x = 0
-                    case pygame.K_DOWN | pygame.K_UP:
-                        self.velocity.y = 0
+    def get_input(self) -> pygame.Vector2:
+        right, left, down, up = self.app.get_key_states(
+            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_DOWN, pygame.K_UP
+        )
+        return pygame.Vector2(right - left, down - up)
 
+    # Below are Onyx Component/RenderedComponent methods
     def update(self, delta: float):
-        if self.velocity.magnitude_squared() != 0:
-            self.pos += self.velocity.normalize() * Square.MOVE_SPEED * delta
+        key_input = self.get_input()
+        if key_input.magnitude_squared() != 0:
+            # self.pos tracks a non-truncated position
+            self.pos += key_input.normalize() * Square.MOVE_SPEED * delta
 
-            dim = self.app.dimensions
+            # Perform collisions with app bounds using self.rect.
             if not self.app.rect.contains(self.rect):
                 self.rect.clamp_ip(self.app.rect)
                 self.pos = pygame.Vector2(*self.rect.center)
 
             self.rect.center = (self.pos.x, self.pos.y)
+
+            # Tell Onyx that something has changed.
             self.request_redraw()
 
     def render(self, surface: pygame.Surface):

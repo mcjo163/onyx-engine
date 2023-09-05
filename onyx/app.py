@@ -115,6 +115,28 @@ class App:
         self._scene_index = scene_index
         self._redraw = True
 
+    def change_scene(
+        self, name: str = None, index: int = None, scene: onyx.scene.Scene = None
+    ):
+        """
+        Requests that the `App` change its current `Scene`.
+
+        The `Scene` may be specified by name or index (to request a `Scene`
+        registered in the `App`), or a new `Scene` instance can be passed in.
+        """
+        if not any(arg != None for arg in [name, index, scene]):
+            raise OnyxError("Missing scene specifier")
+
+        self._change_scene(scene or name or index)
+
+    def get_key_states(self, *keys: int) -> Iterable[bool]:
+        """
+        Get the 'pressed' states for any number of keyboard keys
+        (using the pygame key constants).
+        """
+        state = pygame.key.get_pressed()
+        return map(lambda k: state[k], keys)
+
     @property
     def _current_components(self) -> list[onyx.Component]:
         return self._scenes[self._scene_index].components if any(self._scenes) else []
@@ -140,13 +162,6 @@ class App:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
-
-                # Raised by onyx.scene.change_scene().
-                if event.type == App.CHANGE_SCENE:
-                    specifier: str | int | onyx.scene.Scene = (
-                        event.dict["scene"] or event.dict["name"] or event.dict["index"]
-                    )
-                    self._change_scene(specifier)
 
                 # Dispatch event to relevant components.
                 for component in self._current_components:

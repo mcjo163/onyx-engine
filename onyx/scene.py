@@ -60,20 +60,3 @@ class Scene:
         """Add multiple `Component`s to the `Scene`."""
         for c in components:
             self.add_component(c)
-
-
-def change_scene(name: str = None, index: int = None, scene: Scene = None):
-    """
-    Requests that the `App` change its current `Scene`.
-
-    The `Scene` may be specified by name or index (to request a `Scene`
-    registered in the `App`), or a new `Scene` instance can be passed in.
-    """
-    if not any(arg != None for arg in [name, index, scene]):
-        raise OnyxError("Missing scene specifier")
-
-    pygame.event.post(
-        pygame.event.Event(
-            onyx.App.CHANGE_SCENE, {"name": name, "index": index, "scene": scene}
-        )
-    )
