@@ -20,15 +20,15 @@ class App:
     has been initialized).
     """
 
-    CHANGE_SCENE = pygame.event.custom_type()
-
     def __init__(
         self,
         *,
-        title: str = "onyx app",
         dimensions: tuple[int, int],
+        title: str = "onyx app",
         target_fps: float = 60,
         scenes: list[onyx.scene.Scene] = [],
+        resizable: bool = False,
+        fullscreen: bool = False,
     ) -> None:
         if pygame.get_init():
             raise OnyxError(
@@ -40,7 +40,11 @@ class App:
 
         pygame.display.set_caption(title)
         self._dimensions = pygame.Vector2(dimensions)
-        self._window = pygame.display.set_mode(self._dimensions)
+
+        display_flags = 0
+        display_flags |= pygame.RESIZABLE & -resizable
+        display_flags |= pygame.FULLSCREEN & -fullscreen
+        self._window = pygame.display.set_mode(self._dimensions, display_flags)
         self._clock = pygame.time.Clock()
         self._fps = target_fps
         self._redraw = True
@@ -137,6 +141,9 @@ class App:
         state = pygame.key.get_pressed()
         return map(lambda k: state[k], keys)
 
+    def toggle_fullscreen(self):
+        pygame.display.toggle_fullscreen()
+
     @property
     def _current_components(self) -> list[onyx.Component]:
         return self._scenes[self._scene_index].components if any(self._scenes) else []
@@ -160,8 +167,14 @@ class App:
         while not done:
             # Process incoming events.
             for event in pygame.event.get():
+                # User wants to quit, we should let them. :)
                 if event.type == pygame.QUIT:
                     done = True
+
+                # Raised for manual resize or fullscreen toggle.
+                if event.type == pygame.WINDOWRESIZED:
+                    self._dimensions = pygame.Vector2(event.x, event.y)
+                    self._redraw = True
 
                 # Dispatch event to relevant components.
                 for component in self._current_components:
@@ -183,11 +196,10 @@ class App:
             if any(map(lambda rc: rc._redraw_requested, to_render)) or self._redraw:
                 self._window.fill(self._clear_color)
 
-                for component in to_render:
-                    component.render(self._window)
+                # Draw components in order of their z_index values.
+                for component in sorted(to_render, key=lambda c: c.z_index):
+                    component._internal_render(self._window)
 
-                # A RenderedComponent counts as a pygame 'RectValue' since
-                # it has a 'rect' property. Neat!
                 pygame.display.flip()
                 self._redraw = False
 

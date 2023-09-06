@@ -11,8 +11,8 @@ class Component:
     simply holds a list of pygame events that it cares about and is
     told when those events arise.
 
-    Inheritors of `Component` may implement the `update()` and
-    `handle()` methods to define custom behavior.
+    Inheritors of `Component` may implement the `update(delta: float)` and
+    `handle(event: pygame.event.Event)` methods to define custom behavior.
     """
 
     def __init__(self, event_types: list[int]) -> None:
@@ -41,6 +41,16 @@ class Component:
         """The `App` containing this component."""
         return self.scene.app
 
+    def emit_event(self, event_type: int, dict: dict[str:any]):
+        """
+        Emit a pygame event with the passed dict.
+
+        While this can be used to emit builtin pygame events, it is
+        recommended to only use this for custom events defined by
+        this component.
+        """
+        pygame.event.post(pygame.event.Event(event_type, dict))
+
     def handle(self, event: pygame.event.Event):
         """
         Possible override for `Component` subclasses.
@@ -62,7 +72,7 @@ class Component:
         """
         Possible override for `Component` subclasses.
 
-        Called once per `App` frame. Use this method to update any internal
-        state for your component.
+        Called once per `App` frame, with delta time measured in seconds. Use
+        this method to update any internal state for your component.
         """
         pass

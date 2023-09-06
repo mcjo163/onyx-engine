@@ -18,11 +18,12 @@ class Square(onyx.RenderedComponent):
         )
         return pygame.Vector2(right - left, down - up)
 
-    # Below are Onyx Component/RenderedComponent methods
+    # Below are Onyx Component/RenderedComponent methods.
     def update(self, delta: float):
         key_input = self.get_input()
         if key_input.magnitude_squared() != 0:
-            # self.pos tracks a non-truncated position
+            # self.pos tracks a non-truncated position so that sub-pixel
+            # movements are not lost.
             self.pos += key_input.normalize() * Square.MOVE_SPEED * delta
 
             # Perform collisions with app bounds using self.rect.
@@ -40,9 +41,8 @@ class Square(onyx.RenderedComponent):
 
 
 if __name__ == "__main__":
+    # Create a scene with our square component.
     scene = onyx.Scene("square", [Square(pygame.Vector2(150, 100))])
 
-    onyx.App(
-        dimensions=[300, 200],
-        scenes=[scene],
-    ).run()
+    # Create and run the app.
+    onyx.App(dimensions=[300, 200], scenes=[scene]).run()
